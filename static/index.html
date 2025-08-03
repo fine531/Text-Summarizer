@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Summarizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            font-weight: 500;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .summarize-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            font-weight: 500;
+        }
+
+        .summarize-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .summarize-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .output-section {
+            margin-top: 30px;
+        }
+
+        .summary-box {
+            background: #f8f9fa;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 100px;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .summary-box.has-content {
+            background: #e8f5e8;
+            border-color: #28a745;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-style: italic;
+        }
+
+        .error {
+            display: none;
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .stats {
+            display: none;
+            background: #d4edda;
+            border: 2px solid #c3e6cb;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #155724;
+        }
+
+        .example-texts {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .example-texts h4 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .example-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
+        }
+
+        .example-btn:hover {
+            background: #5a6268;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            textarea {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Text Summarizer</h1>
+            <p>Powered by Hugging Face BART Model</p>
+        </div>
+
+        <div class="content">
+            <div class="input-section">
+                <h3>📝 Enter your text to summarize:</h3>
+                <textarea 
+                    id="inputText" 
+                    placeholder="Paste your long text here... (articles, documents, research papers, etc.)"
+                    rows="8"
+                ></textarea>
+            </div>
+
+            <div class="button-container">
+                <button class="summarize-btn" onclick="summarizeText()">
+                    ✨ Summarize Text
+                </button>
+            </div>
+
+            <div class="loading" id="loading">
+                🔄 Generating summary... Please wait
+            </div>
+
+            <div class="error" id="error"></div>
+
+            <div class="stats" id="stats"></div>
+
+            <div class="output-section">
+                <h3>📋 Summary:</h3>
+                <div class="summary-box" id="summaryOutput">
+                    Your summarized text will appear here...
+                </div>
+            </div>
+
+            <div class="example-texts">
+                <h4>💡 Try these examples:</h4>
+                <button class="example-btn" onclick="loadExample('tech')">Technology Article</button>
+                <button class="example-btn" onclick="loadExample('science')">Science News</button>
+                <button class="example-btn" onclick="loadExample('business')">Business Report</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const examples = {
+            tech: `Artificial Intelligence (AI) has revolutionized numerous industries over the past decade. Machine learning algorithms can now process vast amounts of data to identify patterns that humans might miss. Deep learning, a subset of machine learning, uses neural networks with multiple layers to simulate human brain function. Companies like Google, Microsoft, and OpenAI have invested billions in AI research. The technology is being applied in healthcare for disease diagnosis, in finance for fraud detection, and in transportation for autonomous vehicles. However, AI also raises ethical concerns about job displacement, privacy, and algorithmic bias. Experts recommend developing AI governance frameworks to ensure responsible deployment. The future of AI promises even more sophisticated applications, including artificial general intelligence that could match human cognitive abilities across all domains.`,
+            
+            science: `Climate change continues to be one of the most pressing global challenges of our time. Recent studies show that global temperatures have risen by approximately 1.1 degrees Celsius since pre-industrial times. The primary driver is the increased concentration of greenhouse gases in the atmosphere, particularly carbon dioxide from fossil fuel combustion. The effects are already visible: melting polar ice caps, rising sea levels, more frequent extreme weather events, and shifting ecosystem patterns. The Intergovernmental Panel on Climate Change warns that limiting warming to 1.5°C requires rapid, far-reaching transitions in energy, land, urban infrastructure, and industrial systems. Renewable energy technologies like solar and wind power have become increasingly cost-effective. Many countries have committed to net-zero emissions by 2050, but implementation remains challenging.`,
+            
+            business: `The global e-commerce market has experienced unprecedented growth, particularly accelerated by the COVID-19 pandemic. Online retail sales reached $4.9 trillion in 2021, representing a 14.2% increase from the previous year. Major players like Amazon, Alibaba, and Shopify have expanded their market presence significantly. The shift towards digital commerce has forced traditional brick-and-mortar retailers to develop omnichannel strategies. Mobile commerce now accounts for more than 50% of all e-commerce transactions. Emerging trends include social commerce, where platforms like Instagram and TikTok integrate shopping features, and the rise of direct-to-consumer brands bypassing traditional retail channels. Supply chain disruptions have highlighted the importance of logistics and inventory management. Looking ahead, technologies like augmented reality for virtual try-ons and AI-powered personalization are expected to further transform the shopping experience.`
+        };
+
+        function loadExample(type) {
+            document.getElementById('inputText').value = examples[type];
+        }
+
+        async function summarizeText() {
+            const inputText = document.getElementById('inputText').value.trim();
+            const loadingDiv = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+            const statsDiv = document.getElementById('stats');
+            const summaryOutput = document.getElementById('summaryOutput');
+            const button = document.querySelector('.summarize-btn');
+
+            // Reset previous states
+            errorDiv.style.display = 'none';
+            statsDiv.style.display = 'none';
+            summaryOutput.classList.remove('has-content');
+
+            if (!inputText) {
+                showError('Please enter some text to summarize.');
+                return;
+            }
+
+            if (inputText.length < 50) {
+                showError('Please enter a longer text (at least 50 characters) for better summarization results.');
+                return;
+            }
+
+            // Show loading state
+            loadingDiv.style.display = 'block';
+            button.disabled = true;
+            button.textContent = '⏳ Processing...';
+
+            try {
+                const response = await fetch('/summarize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: inputText })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Display summary
+                summaryOutput.textContent = data.summary;
+                summaryOutput.classList.add('has-content');
+
+                // Show statistics
+                showStats(inputText.length, data.summary.length);
+
+            } catch (error) {
+                showError(`Error: ${error.message}`);
+            } finally {
+                // Reset loading state
+                loadingDiv.style.display = 'none';
+                button.disabled = false;
+                button.textContent = '✨ Summarize Text';
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function showStats(originalLength, summaryLength) {
+            const statsDiv = document.getElementById('stats');
+            const compressionRatio = ((originalLength - summaryLength) / originalLength * 100).toFixed(1);
+            statsDiv.innerHTML = `
+                📊 <strong>Summary Statistics:</strong><br>
+                Original: ${originalLength.toLocaleString()} characters | 
+                Summary: ${summaryLength.toLocaleString()} characters | 
+                Compression: ${compressionRatio}% reduction
+            `;
+            statsDiv.style.display = 'block';
+        }
+
+        // Allow Enter key to submit (Ctrl+Enter)
+        document.getElementById('inputText').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                summarizeText();
+            }
+        });
+    </script>
+</body>
+</html>

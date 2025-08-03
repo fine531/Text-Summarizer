@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=40.8.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "text-summarizer"
+version = "1.0.0"
+description = "Text Summarizer using FastAPI and Hugging Face"
+dependencies = [
+    "fastapi==0.104.1",
+    "uvicorn[standard]==0.24.0",
+    "requests==2.31.0",
+    "python-dotenv==1.0.0",
+    "pydantic==2.5.0"
+]
+
+[tool.setuptools]
+packages = ["."]
