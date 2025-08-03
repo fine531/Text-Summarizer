@@ -3,4 +3,5 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.12"
-run: "uvicorn main:app --host 0.0.0.0 --port 8000"
+buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
